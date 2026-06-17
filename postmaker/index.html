@@ -33,22 +33,15 @@
 
                 <div class="control-section">
                     <h3>Format</h3>
-                    <div id="format-icons">
+                    <div class="section-body"><div id="format-icons">
                         <svg title="default-post" id="default-icon" class="format-icon icon-selected"
                             xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 40 60">
-                            <defs>
-                                <style>
-                                    .cls-1 {
-                                        fill: #fff
-                                    }
-                                </style>
-                            </defs>
                             <path
                                 d="M21.18 23.67h-3.69v5.69h3.69c1.85 0 3.13-.81 3.13-2.7v-.29c0-1.88-1.28-2.7-3.13-2.7Z"
-                                class="cls-1" />
+                                style="fill:#fff" />
                             <path
                                 d="M36 0H4C1.79 0 0 1.79 0 4v52c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4V4c0-2.21-1.79-4-4-4Zm-6.64 26.66c0 4.39-3.25 6.68-7.66 6.68h-4.21v6.96h-4.85V19.7h9.06c4.38 0 7.66 2.32 7.66 6.67v.29Z"
-                                class="cls-1" />
+                                style="fill:#fff" />
                         </svg>
                         <svg title="square-post" id="square-icon" class="format-icon" xmlns="http://www.w3.org/2000/svg"
                             data-name="Layer 1" viewBox="0 0 40 40">
@@ -64,26 +57,19 @@
                         </svg>
                         <svg title="reel" xmlns="http://www.w3.org/2000/svg" id="reel-icon" class="format-icon"
                             data-name="Layer 1" viewBox="0 0 33.75 60">
-                            <defs>
-                                <style>
-                                    .cls-1 {
-                                        fill: #fff
-                                    }
-                                </style>
-                            </defs>
                             <path
                                 d="M17.89 23.67h-3.98v5.69h3.98c1.86 0 3.14-.81 3.14-2.7v-.29c0-1.88-1.28-2.7-3.14-2.7Z"
-                                class="cls-1" />
+                                style="fill:#fff" />
                             <path
                                 d="M29.75 0H4C1.79 0 0 1.79 0 4v52c0 2.21 1.79 4 4 4h25.75c2.21 0 4-1.79 4-4V4c0-2.21-1.79-4-4-4Zm-8.43 40.3-4.3-6.96h-3.11v6.96H9.07V19.7h9.34c4.39 0 7.67 2.32 7.67 6.67v.29c0 3.14-1.66 5.2-4.24 6.13l4.84 7.51h-5.36Z"
-                                class="cls-1" />
+                                style="fill:#fff" />
                         </svg>
-                    </div>
+                    </div></div>
                 </div>
 
                 <div class="control-section">
                     <h3>Background & Frames</h3>
-                    <div id="template-controls">
+                    <div class="section-body"><div id="template-controls">
                         <div class="sub-section" id="background-image-controls">
                             <div class="sub-section-header">
                                 <h4>Background Image</h4>
@@ -139,18 +125,17 @@
                                         <option>Triangle</option>
                                         <option>Square</option>
                                         <option>Corner</option>
-                                        <option>Trapezoid</option>
                                     </select>
                                 </label>
                             </div>
                         </div>
 
-                    </div>
+                    </div></div>
                 </div>
 
                 <div class="control-section">
                     <h3>Colors</h3>
-                    <div id="color-icons">
+                    <div class="section-body"><div id="color-icons">
                         <svg xmlns="http://www.w3.org/2000/svg" class="color-icon icon-selected" data-name="Layer 1"
                             viewBox="0 0 30 30">
                             <defs>
@@ -262,16 +247,80 @@
                                 style="fill:#272011" />
                             <circle cx="21.93" cy="7.54" r="4.97" class="cls-3" />
                         </svg>
-                    </div>
+                    </div></div>
                 </div>
 
                 <div class="control-section">
                     <h3>Typography</h3>
-                    <div id="text-controls"></div>
+                    <div class="section-body"><div id="text-controls">
+
+                        <div class="sub-section" id="marginalia-controls">
+                            <div class="sub-section-header">
+                                <h4>Marginalia</h4>
+                                <label class="toggle">
+                                    <input id="marginalia-checkbox" type="checkbox" />
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="marginalia-modes">
+
+                                <label class="mode-option icon-selected">
+                                    <input type="radio" name="marginalia-mode" value="manual" checked>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+                                        <circle cx="20" cy="20" r="13" fill="none" stroke="#fff" stroke-width="1.5"/>
+                                        <line x1="20" y1="4"  x2="20" y2="12" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                                        <line x1="20" y1="28" x2="20" y2="36" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                                        <line x1="4"  y1="20" x2="12" y2="20" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                                        <line x1="28" y1="20" x2="36" y2="20" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                                        <circle cx="20" cy="20" r="2" fill="#fff"/>
+                                    </svg>
+                                    <span>Manual</span>
+                                </label>
+
+                                <label class="mode-option">
+                                    <input type="radio" name="marginalia-mode" value="path">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+                                        <path d="M 4 33 Q 20 7 36 33" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+                                        <text x="6"  y="30" font-size="11" fill="#fff" font-style="italic" text-anchor="middle" transform="rotate(-54, 6, 30)">A</text>
+                                        <text x="20" y="19" font-size="11" fill="#fff" font-style="italic" text-anchor="middle">B</text>
+                                        <text x="34" y="30" font-size="11" fill="#fff" font-style="italic" text-anchor="middle" transform="rotate(54, 34, 30)">C</text>
+                                    </svg>
+                                    <span>On Path</span>
+                                </label>
+
+                            </div>
+
+                            <div class="marginalia-manual-inputs" id="marginalia-manual-inputs">
+                                <label class="marginalia-label">Top
+                                    <input type="text" id="marginalia-top" placeholder="top margin text">
+                                </label>
+                                <label class="marginalia-label">Bottom
+                                    <input type="text" id="marginalia-bottom" placeholder="bottom margin text">
+                                </label>
+                                <label class="marginalia-label">Left
+                                    <input type="text" id="marginalia-left" placeholder="left margin text">
+                                </label>
+                                <label class="marginalia-label">Right
+                                    <input type="text" id="marginalia-right" placeholder="right margin text">
+                                </label>
+                            </div>
+
+                            <div class="marginalia-path-inputs" id="marginalia-path-inputs" style="display:none;">
+                                <label class="marginalia-label" style="grid-column: 1 / -1;">Text
+                                    <input type="text" id="marginalia-path-text" placeholder="text on path">
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div></div>
                 </div>
 
-                <div id="save-controls" class="control-section">
-                    <h3>Export</h3>
+            </div>
+
+            <div id="save-controls" class="control-section">
+                <h3>Export</h3>
+                <div class="section-body">
                     <p>Export Name:</p>
                     <input type="text" id="export-name" value="Post" pattern="[A-Za-z0-9]+"
                         title="Only letters and numbers allowed, no spaces"> </input>

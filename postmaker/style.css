@@ -223,6 +223,7 @@ input::file-selector-button:hover {
 /* #region CONTROL PANEL*/
 #control-panel {
     display: flex;
+    position: relative;
     top: 2.5%;
     right: 0;
     flex: 50%;
@@ -243,7 +244,9 @@ input::file-selector-button:hover {
 }
 
 #controls-wrapper {
+    flex: 1;
     overflow-y: scroll;
+    padding-bottom: 300px;
 }
 
 #controls-wrapper::-webkit-scrollbar {
@@ -258,14 +261,35 @@ input::file-selector-button:hover {
 
     border-radius: 8px;
     background: var(--white-overlay);
-    padding: 10px;
+    padding: 20px 10px;
     width: 100%;
     color: white;
 
 }
 
+.control-section h3 {
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.section-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.77s ease-in-out;
+}
+
+.control-section.open .section-body {
+    max-height: 1000px;
+    transition: max-height 0.77s ease-out;
+}
+
 .sub-section {
     border-top: var(--white-border);
+}
+
+.sub-section:first-child {
+    border-top: none;
 }
 
 .sub-section-header {
@@ -349,19 +373,100 @@ input::file-selector-button:hover {
 }
 /* #endregion */
 
+/*#region MARGINALIA*/
+.marginalia-modes {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    gap: 16px;
+    padding: 14px 0 4px;
+}
+
+.mode-option {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    opacity: 0.45;
+    transition: var(--transition);
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: var(--white-border);
+    user-select: none;
+}
+
+.mode-option input[type="radio"] {
+    display: none;
+}
+
+.mode-option:hover {
+    opacity: 0.75;
+}
+
+.mode-option.icon-selected {
+    opacity: 1;
+    border: double #ffffff70 4px;
+    border-radius: 8px;
+}
+
+.mode-option svg {
+    width: 36px;
+    height: 36px;
+}
+
+.mode-option span {
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+}
+
+.marginalia-manual-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    padding: 10px 0 4px;
+}
+
+.marginalia-label {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.marginalia-label input {
+    margin: 0;
+}
+/*#endregion*/
+
 /*#region SAVE*/
 #save-controls {
     display: flex;
-    position: sticky;
-    bottom: 0;
+    position: absolute;
+    pointer-events: none;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
     flex-flow: column nowrap;
     justify-content: flex-end;
     backdrop-filter: none;
     border: none;
     background: linear-gradient(0deg, rgba(16, 25, 15, 1) 60%, rgba(16, 25, 15, 0) 100%);
-    background-color: none;
     height: 300px;
+}
 
+#save-controls .section-body {
+    max-height: 1000px;
+    pointer-events: auto;
 }
 /*#endregion */
 
