@@ -350,6 +350,99 @@ input::file-selector-button:hover {
 
 #frame-options {
     display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+}
+
+#frame-options label input[type="text"] {
+    margin: 0;
+}
+
+#frame-options,
+#badge-text-inputs,
+#bg-image-options,
+#marginalia-options,
+.content-layout-options {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease-in-out;
+}
+
+#frame-options.expanded,
+#badge-text-inputs.expanded,
+#bg-image-options.expanded,
+#marginalia-options.expanded {
+    max-height: 500px;
+}
+
+.content-layout-options.expanded {
+    max-height: 2000px;
+}
+
+.frame-options-row {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.frame-options-row > label {
+    display: flex;
+    flex: 1;
+    flex-flow: column nowrap;
+    gap: 4px;
+}
+
+.frame-options-row > label select {
+    width: 100%;
+}
+
+.checkbox-option {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+input[type="checkbox"].checkbox-raw {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.checkbox-custom {
+    display: block;
+    flex-shrink: 0;
+    position: relative;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+    border: var(--white-border);
+    border-radius: 4px;
+    background: var(--white-overlay);
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+}
+
+.checkbox-raw:focus-visible + .checkbox-custom {
+    outline: 1px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.checkbox-raw:checked + .checkbox-custom::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 12px;
+    top: 7px;
+    width: 7px;
+    height: 13px;
+    border: solid var(--primary-color);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 /* #endregion */
 
@@ -424,6 +517,30 @@ input::file-selector-button:hover {
     text-transform: uppercase;
 }
 
+.mode-option.mode-option--disabled {
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.marginalia-callout {
+    margin: 4px 0 6px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 210, 0, 0.35);
+    background: rgba(255, 210, 0, 0.07);
+}
+
+.marginalia-callout p {
+    margin: 0;
+    color: rgba(255, 210, 0, 0.85);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: normal;
+    text-transform: none;
+    line-height: 1.6;
+}
+
 .marginalia-manual-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -446,6 +563,120 @@ input::file-selector-button:hover {
 .marginalia-label input {
     margin: 0;
 }
+
+.marginalia-label-row {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+#text-overlay-heading-size-label {
+    text-transform: none;
+}
+/*#endregion*/
+
+/*#region CONTENT*/
+.content-layout-options .sub-section {
+    border-top: none;
+    padding: 0;
+}
+
+.content-layout-options .sub-section-header {
+    padding: 0;
+}
+.content-layout-options {
+    padding-top: 4px;
+}
+
+.content-field {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.content-field-label {
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.content-alignment-options {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 4px;
+}
+
+.content-align-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.content-align-option input[type="radio"] {
+    display: none;
+}
+
+.content-align-option span {
+    display: block;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+    border: var(--white-border);
+    border-radius: 4px;
+    background: var(--white-overlay);
+    padding: 0 10px;
+    height: 35px;
+    line-height: 35px;
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.content-align-option input[type="radio"]:checked + span {
+    border: double #ffffff70 2px;
+}
+
+.content-sub-options {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease-in-out;
+}
+
+.content-sub-options.expanded {
+    max-height: 600px;
+}
+
+.content-sub-options .marginalia-label {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+    padding: 6px 0;
+}
+
+.content-sub-options textarea {
+    all: unset;
+    box-sizing: border-box;
+    border: var(--white-border);
+    border-radius: 4px;
+    background: var(--white-overlay);
+    padding: 6px 4px;
+    width: 100%;
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 12px;
+    font-weight: 200;
+    resize: none;
+    line-height: 1.5;
+}
 /*#endregion*/
 
 /*#region SAVE*/
@@ -458,10 +689,13 @@ input::file-selector-button:hover {
     right: 20px;
     flex-flow: column nowrap;
     justify-content: flex-end;
-    backdrop-filter: none;
     border: none;
-    background: linear-gradient(0deg, rgba(16, 25, 15, 1) 60%, rgba(16, 25, 15, 0) 100%);
     height: 300px;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    background: linear-gradient(to top, rgba(16, 25, 15, 1) 60%, rgba(16, 25, 15, 0) 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
 }
 
 #save-controls .section-body {

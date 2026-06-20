@@ -68,7 +68,31 @@
                 </div>
 
                 <div class="control-section">
-                    <h3>Background & Frames</h3>
+                    <h3>Grids &amp; Guides</h3>
+                    <div class="section-body">
+                        <div class="sub-section">
+                            <div class="sub-section-header">
+                                <h4>Show Grids &amp; Guides</h4>
+                                <label class="toggle">
+                                    <input type="checkbox" id="guides-toggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="sub-section">
+                            <div class="sub-section-header">
+                                <h4>Safe Zones</h4>
+                                <label class="toggle">
+                                    <input type="checkbox" id="safe-zones-toggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Background</h3>
                     <div class="section-body"><div id="template-controls">
                         <div class="sub-section" id="background-image-controls">
                             <div class="sub-section-header">
@@ -79,6 +103,7 @@
                                 </label>
                             </div>
                             <div id="bg-file-input-target"></div>
+                            <div id="bg-image-options">
                             <label>
                                 Horizontal Position
                                 <input id="bg-image-offset-x" type="range"></input></label>
@@ -96,39 +121,9 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                        </div>
-
-
-                        <div class="sub-section">
-                            <div class="sub-section-header">
-                                <h4>Frame</h4>
-                                <label class="toggle">
-                                    <input id="frame-checkbox" type="checkbox" />
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div id="frame-options">
-                                <label>Frame Type
-                                    <select id="frame-type-input">
-                                        <option value="0">Simple</option>
-                                        <option value="1">Thick</option>
-                                        <option value="2">Dashed</option>
-                                        <option value="3">Corner</option>
-                                        <option value="4">Tabs</option>
-                                        <option value="5">Thread</option>
-                                    </select>
-                                </label>
-                                <label>Cornices
-                                    <select id="cornices-type-input">
-                                        <option>None</option>
-                                        <option>Line</option>
-                                        <option>Triangle</option>
-                                        <option>Square</option>
-                                        <option>Corner</option>
-                                    </select>
-                                </label>
                             </div>
                         </div>
+
 
                     </div></div>
                 </div>
@@ -251,8 +246,57 @@
                 </div>
 
                 <div class="control-section">
-                    <h3>Typography</h3>
-                    <div class="section-body"><div id="text-controls">
+                    <h3>Frames & Margins</h3>
+                    <div class="section-body"><div>
+
+                        <div class="sub-section">
+                            <div class="sub-section-header">
+                                <h4>Frame</h4>
+                                <label class="toggle">
+                                    <input id="frame-checkbox" type="checkbox" />
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div id="frame-options">
+                                <div class="frame-options-row">
+                                <label>Frame Type
+                                    <select id="frame-type-input">
+                                        <option value="0">Simple</option>
+                                        <option value="1">Thick</option>
+                                        <option value="2">Dashed</option>
+                                        <option value="3">Corner</option>
+                                        <option value="4">Tabs</option>
+                                        <option value="5">Thread</option>
+                                    </select>
+                                </label>
+                                <label>Cornices
+                                    <select id="cornices-type-input">
+                                        <option>None</option>
+                                        <option>Line</option>
+                                        <option>Triangle</option>
+                                        <option>Square</option>
+                                        <option>Corner</option>
+                                    </select>
+                                </label>
+                                <label class="checkbox-option">
+                                    Badges
+                                    <input id="badges-checkbox" type="checkbox" class="checkbox-raw" />
+                                    <span class="checkbox-custom"></span>
+                                </label>
+                                </div>
+                                <div id="badges-callout" class="marginalia-callout" style="display:none;">
+                                    <p id="badges-callout-text"></p>
+                                </div>
+                                <div id="badge-text-inputs">
+                                <label>Top badge
+                                    <input type="text" id="badge-top-text" placeholder="top badge text (≈16 chars)" maxlength="16">
+                                </label>
+                                <label>Bottom badge
+                                    <input type="text" id="badge-bottom-text" placeholder="bottom badge text (≈16 chars)" maxlength="16">
+                                </label>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="sub-section" id="marginalia-controls">
                             <div class="sub-section-header">
@@ -262,6 +306,11 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
+                            <div id="marginalia-options">
+                            <div id="marginalia-callout" class="marginalia-callout" style="display:none;">
+                                <p id="marginalia-callout-text"></p>
+                            </div>
+
                             <div class="marginalia-modes">
 
                                 <label class="mode-option icon-selected">
@@ -310,9 +359,161 @@
                                     <input type="text" id="marginalia-path-text" placeholder="text on path">
                                 </label>
                             </div>
+                            </div>
 
                         </div>
 
+                    </div></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Content</h3>
+                    <div class="section-body">
+
+                        <div class="sub-section">
+                            <div class="sub-section-header">
+                                <h4>Text Overlay</h4>
+                                <label class="toggle">
+                                    <input type="radio" name="content-layout" id="content-layout-text-overlay" value="text-overlay">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div id="content-text-overlay-options" class="content-layout-options">
+
+                                <!-- 0. Alignment -->
+                                <div class="content-field">
+                                    <span class="content-field-label">Alignment</span>
+                                    <div class="content-alignment-options">
+                                        <label class="content-align-option">
+                                            <input type="radio" name="text-overlay-align" value="left">
+                                            <span>Left</span>
+                                        </label>
+                                        <label class="content-align-option">
+                                            <input type="radio" name="text-overlay-align" value="center" checked>
+                                            <span>Centre</span>
+                                        </label>
+                                        <label class="content-align-option">
+                                            <input type="radio" name="text-overlay-align" value="right">
+                                            <span>Right</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- 1. Heading (keystone) -->
+                                <div class="sub-section">
+                                    <div class="sub-section-header">
+                                        <h4>Heading</h4>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="text-overlay-heading-toggle" class="checkbox-raw">
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                    <div id="text-overlay-heading-options" class="content-sub-options">
+                                        <label class="marginalia-label">Text
+                                            <textarea id="text-overlay-heading-text" placeholder="heading" rows="3"></textarea>
+                                        </label>
+                                        <label class="marginalia-label">
+                                            <span class="marginalia-label-row">Size <span id="text-overlay-heading-size-label">140pt</span></span>
+                                            <input type="range" id="text-overlay-heading-size" min="120" max="160" value="140">
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- dependents: disabled until heading is active -->
+                                <div id="text-overlay-dependents">
+
+                                <!-- 2. Sub-Heading -->
+                                <div class="sub-section">
+                                    <div class="sub-section-header">
+                                        <h4>Sub-Heading</h4>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="text-overlay-subheading-toggle" class="checkbox-raw">
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                    <div id="text-overlay-subheading-options" class="content-sub-options">
+                                        <label class="marginalia-label">Text
+                                            <input type="text" id="text-overlay-subheading-text" placeholder="sub-heading">
+                                        </label>
+                                        <label class="marginalia-label">
+                                            <span class="marginalia-label-row">Gap <span id="text-overlay-subheading-gap-label">33px</span></span>
+                                            <input type="range" id="text-overlay-subheading-gap" min="10" max="50" value="33">
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Logo -->
+                                <div id="text-overlay-logo-callout" class="marginalia-callout" style="display:none">
+                                    <p>Logo unavailable with Badges or Reel / Story format.</p>
+                                </div>
+                                <div class="sub-section" id="text-overlay-logo-section">
+                                    <div class="sub-section-header">
+                                        <h4>Logo</h4>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="text-overlay-logo-toggle" class="checkbox-raw">
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                    <div id="text-overlay-logo-options" class="content-sub-options">
+                                        <div class="content-field">
+                                            <span class="content-field-label">Position</span>
+                                            <div class="content-alignment-options">
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-logo-position" value="top" checked>
+                                                    <span>Top</span>
+                                                </label>
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-logo-position" value="bottom">
+                                                    <span>Bottom</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 4. Body Text -->
+                                <div class="sub-section">
+                                    <div class="sub-section-header">
+                                        <h4>Body</h4>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="text-overlay-body-toggle" class="checkbox-raw">
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                    <div id="text-overlay-body-options" class="content-sub-options">
+                                        <label class="marginalia-label">Text
+                                            <textarea id="text-overlay-body-text" placeholder="body text" rows="4"></textarea>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- 5. CTA -->
+                                <div class="sub-section">
+                                    <div class="sub-section-header">
+                                        <h4>CTA</h4>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" id="text-overlay-cta-toggle" class="checkbox-raw">
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                    <div id="text-overlay-cta-options" class="content-sub-options">
+                                        <label class="marginalia-label">Label
+                                            <input type="text" id="text-overlay-cta-text" placeholder="e.g. Learn more">
+                                        </label>
+                                    </div>
+                                </div>
+
+                                </div><!-- end #text-overlay-dependents -->
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Typography</h3>
+                    <div class="section-body"><div id="text-controls">
                     </div></div>
                 </div>
 
