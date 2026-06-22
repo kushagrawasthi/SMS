@@ -50,6 +50,14 @@ let textOverlaySubheadingText   = document.querySelector('#text-overlay-subheadi
 let textOverlaySubheadingGap    = document.querySelector('#text-overlay-subheading-gap');
 let textOverlayLogoToggle       = document.querySelector('#text-overlay-logo-toggle');
 let textOverlayLogoPositionRadios = document.querySelectorAll('input[name="text-overlay-logo-position"]');
+let textOverlayBodyToggle       = document.querySelector('#text-overlay-body-toggle');
+let textOverlayBodyText         = document.querySelector('#text-overlay-body-text');
+let textOverlayBodyPositionRadios = document.querySelectorAll('input[name="text-overlay-body-position"]');
+let textOverlayCtaToggle        = document.querySelector('#text-overlay-cta-toggle');
+let textOverlayCtaText          = document.querySelector('#text-overlay-cta-text');
+let textOverlayCtaStyleRadios   = document.querySelectorAll('input[name="text-overlay-cta-style"]');
+let textOverlayCtaDiscountField = document.querySelector('#text-overlay-cta-discount-field');
+let textOverlayCtaDiscountText  = document.querySelector('#text-overlay-cta-discount-text');
 let textOverlayAlignRadios      = document.querySelectorAll('input[name="text-overlay-align"]');
 let marginaliaSection = document.querySelector('#marginalia-controls');
 let modeOptions = document.querySelectorAll('.mode-option');
@@ -334,6 +342,10 @@ function setup() {
         updateMarginaliaOptions();
     });
 
+    textOverlayAlignRadios.forEach(radio => {
+        radio.addEventListener('input', updateMarginaliaOptions);
+    });
+
     const contentLayoutRadios = document.querySelectorAll('input[name="content-layout"]');
     contentLayoutRadios.forEach(radio => {
         radio.addEventListener('input', function () {
@@ -384,6 +396,15 @@ function setup() {
     });
 
     updateTextOverlayDependents();
+
+    function updateCtaDiscountVisibility() {
+        const style = [...textOverlayCtaStyleRadios].find(r => r.checked)?.value ?? 'solid';
+        textOverlayCtaDiscountField.style.display = style === 'coupon' ? 'block' : 'none';
+    }
+    textOverlayCtaStyleRadios.forEach(radio => {
+        radio.addEventListener('input', updateCtaDiscountVisibility);
+    });
+    updateCtaDiscountVisibility();
 
     const headingSizeLabel = document.getElementById('text-overlay-heading-size-label');
     textOverlayHeadingSize.addEventListener('input', function () {
@@ -544,11 +565,12 @@ function updateLogoSection() {
 }
 
 function updateMarginaliaOptions() {
-    const frame   = frameType.value;
-    const cornice = cornicesType.value;
+    const frame     = frameType.value;
+    const cornice   = cornicesType.value;
+    const alignment = [...textOverlayAlignRadios].find(r => r.checked)?.value ?? 'center';
 
     // frame values: "0"=Simple, "1"=Thick, "2"=Dashed, "3"=Corner, "4"=Tabs
-    const manualDisabled = ["3", "4"].includes(frame);
+    const manualDisabled = ["3", "4"].includes(frame) || alignment !== 'center';
     const pathDisabled   = frame === "2" || (!["None", "Triangle"].includes(cornice) && !(frame === "1" && cornice === "Square"));
 
     const manualOption = modeOptions[0];
@@ -574,6 +596,9 @@ function updateMarginaliaOptions() {
     }
     if (["3", "4"].includes(frame)) {
         messages.push("Corner / tab frame: manual placement unavailable.");
+    }
+    if (alignment !== 'center') {
+        messages.push("Manual placement requires centered text overlay alignment.");
     }
     if (!["None", "Triangle"].includes(cornice) && !(frame === "1" && cornice === "Square")) {
         messages.push("Text on path requires no cornice or Triangle cornice (except Square with thick frame).");
@@ -613,12 +638,25 @@ function drawTextOverlay() {
     const area      = getContentArea();
     const alignment = [...textOverlayAlignRadios].find(r => r.checked)?.value ?? 'center';
 
+    // When body copy is present and placed below, the whole text block (heading,
+    // sub-heading, body) shifts up one grid row to make room beneath it.
+    // Placing body copy above the header is a fixed position, so that shift doesn't apply.
+    const bodyActive   = textOverlayBodyToggle.checked && textOverlayBodyText.value.trim() !== '';
+    const bodyPosition = [...textOverlayBodyPositionRadios].find(r => r.checked)?.value ?? 'below';
+    const rowH         = area.h / 6;
+    const shiftY        = (bodyActive && bodyPosition === 'below') ? -rowH : 0;
+
     const logoAllowed = exportSize.label !== 'Reel/Story' && !badgesCheckbox.checked;
     if (textOverlayLogoToggle.checked && logoAllowed) drawLogo(area, alignment);
 
+    if (bodyActive) drawBodyText(area, alignment, bodyPosition);
+
+    if (textOverlayCtaToggle.checked) drawCTA(area, alignment);
+
     if (!textOverlayHeadingToggle.checked) return;
 
-    const lines          = textOverlayHeadingText.value.split('\n').slice(0, 3).map(l => l.toUpperCase());
+    const headingRaw     = textOverlayHeadingText.value.trim() === '' ? 'Heading' : textOverlayHeadingText.value;
+    const lines          = headingRaw.split('\n').slice(0, 3).map(l => l.toUpperCase());
     const headingSize    = int(textOverlayHeadingSize.value);
     const leading        = headingSize * 1.15;
     const showSubheading = textOverlaySubheadingToggle.checked && textOverlaySubheadingText.value.trim() !== '';
@@ -641,7 +679,7 @@ function drawTextOverlay() {
     pg.textFont('begum');
     pg.textAlign(alignMap[alignment], BASELINE);
 
-    const headingStartY = pg.height / 2 - totalH / 2 + headingSize;
+    const headingStartY = pg.height / 2 - totalH / 2 + headingSize + shiftY;
 
     pg.textSize(headingSize);
     lines.forEach((line, i) => {
@@ -681,6 +719,185 @@ function drawLogo(area, alignment) {
     pg.push();
     pg.imageMode(CENTER);
     pg.image(img, x, y, targetW, targetH);
+    pg.pop();
+}
+
+function toSentenceCase(str) {
+    return str.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+}
+
+// Greedily wraps a single paragraph into lines no wider than maxWidth.
+// Measures via the native 2D context directly (ctx.font set by the caller) rather than
+// pg.textWidth() — p5's cached text metrics don't always reflect a same-call textSize/textFont change.
+function wrapLine(line, maxWidth, ctx) {
+    const words = line.split(/\s+/).filter(Boolean);
+    if (words.length === 0) return [''];
+
+    const wrapped = [];
+
+    // character-level fallback for a single token wider than maxWidth on its own
+    const breakLongWord = (word) => {
+        let chunk = '';
+        for (const ch of word) {
+            const candidate = chunk + ch;
+            if (chunk && ctx.measureText(candidate).width > maxWidth) {
+                wrapped.push(chunk);
+                chunk = ch;
+            } else {
+                chunk = candidate;
+            }
+        }
+        return chunk;
+    };
+
+    let current = '';
+    words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (current && ctx.measureText(candidate).width > maxWidth) {
+            wrapped.push(current);
+            current = ctx.measureText(word).width > maxWidth ? breakLongWord(word) : word;
+        } else if (!current && ctx.measureText(word).width > maxWidth) {
+            current = breakLongWord(word);
+        } else {
+            current = candidate;
+        }
+    });
+
+    if (current) wrapped.push(current);
+    return wrapped;
+}
+
+function drawBodyText(area, alignment, position = 'below') {
+    const text = textOverlayBodyText.value.trim();
+    if (!text) return;
+
+    const bodySize = 30;
+    const leading  = bodySize * 1.3;
+    const maxWidth = area.w * 0.5; // body block never exceeds half the content area's width
+
+    const ctaActive = textOverlayCtaToggle.checked && textOverlayCtaText.value.trim() !== '';
+    const rowH       = area.h / 6;
+    const rowCenterY = position === 'above-header'
+        ? area.y + 1.5 * rowH                       // second grid row, fixed — unaffected by CTA
+        : area.y + (ctaActive ? 3.5 : 4.5) * rowH;   // third-last row when CTA active, else second-last
+
+    const alignMap = { left: LEFT, center: CENTER, right: RIGHT };
+    const xMap     = {
+        left:   pg.width / 2 - area.w / 2,
+        center: pg.width / 2,
+        right:  pg.width / 2 + area.w / 2,
+    };
+
+    pg.push();
+    pg.fill(selectedColorscheme.foregroundColor);
+    pg.noStroke();
+    pg.textFont('begum');
+    pg.textSize(bodySize);
+    pg.textAlign(alignMap[alignment], BASELINE);
+
+    const ctx = pg.drawingContext;
+    ctx.font = `${bodySize}px begum`;
+    const lines = text.split('\n').flatMap(p => wrapLine(toSentenceCase(p), maxWidth, ctx));
+    const totalH = leading * lines.length;
+    const startY = rowCenterY - totalH / 2 + bodySize;
+
+    lines.forEach((line, i) => {
+        pg.text(line, xMap[alignment], startY + i * leading);
+    });
+    pg.pop();
+}
+
+function drawCTA(area, alignment) {
+    const text = textOverlayCtaText.value.trim();
+    if (!text) return;
+
+    const style = [...textOverlayCtaStyleRadios].find(r => r.checked)?.value ?? 'solid';
+    const label = text.toUpperCase();
+
+    const ctaHeight = 75;
+    const ctaSize   = 25;
+    const lsPx      = ctaSize * 0.3; // 0.3em letter spacing, our standard
+    const padding   = 80;
+    const minWidth  = area.w * 0.30;
+    const maxWidth  = area.w * 0.35;
+
+    const rowH = area.h / 6;
+    const y    = area.y + 4.5 * rowH; // centered in the second-last grid row
+
+    pg.push();
+    pg.textFont('begum');
+    pg.textSize(ctaSize);
+    pg.textAlign(CENTER, CENTER);
+    pg.rectMode(CENTER);
+
+    const ctx = pg.drawingContext;
+    ctx.font = `${ctaSize}px begum`;
+    const labelWidth = ctx.measureText(label).width + label.length * lsPx;
+    const ctaWidth = constrain(labelWidth + padding, minWidth, maxWidth);
+
+    const xMap = {
+        left:   area.x + ctaWidth / 2,
+        center: pg.width / 2,
+        right:  area.x + area.w - ctaWidth / 2,
+    };
+    const x = xMap[alignment];
+    ctx.letterSpacing = '0.3em';
+
+    if (style === 'solid') {
+        pg.noStroke();
+        pg.fill(selectedColorscheme.buttonColor);
+        pg.rect(x, y, ctaWidth, ctaHeight);
+        pg.fill(selectedColorscheme.backgroundColor);
+        pg.text(label, x, y);
+    } else if (style === 'line') {
+        pg.noFill();
+        pg.stroke(selectedColorscheme.buttonColor);
+        pg.strokeWeight(1);
+        pg.rect(x, y, ctaWidth, ctaHeight);
+        pg.noStroke();
+        pg.fill(selectedColorscheme.buttonColor);
+        pg.text(label, x, y);
+    } else if (style === 'coupon') {
+        const offset = 5; // outline sits offset px outside the solid rect on every side
+        pg.noFill();
+        pg.stroke(selectedColorscheme.buttonColor);
+        pg.strokeWeight(1);
+        ctx.setLineDash([6, 6]);
+        pg.rect(x, y, ctaWidth + offset * 2, ctaHeight + offset * 2, 5);
+        ctx.setLineDash([]);
+
+        pg.noStroke();
+        pg.fill(selectedColorscheme.buttonColor);
+        pg.rect(x, y, ctaWidth, ctaHeight, 5);
+        pg.fill(selectedColorscheme.backgroundColor);
+        pg.text(label, x, y);
+
+        const discountText = textOverlayCtaDiscountText.value.trim();
+        if (discountText) {
+            const discountSize   = 20;
+            const discountGap    = 15;
+            const outlineTopY    = y - ctaHeight / 2 - offset;
+            const outlineHalfW   = ctaWidth / 2 + offset;
+            const discountAlignMap = { left: LEFT, center: CENTER, right: RIGHT };
+            const discountX = alignment === 'left'  ? x - outlineHalfW
+                             : alignment === 'right' ? x + outlineHalfW
+                             : x;
+
+            ctx.letterSpacing = '0px';
+            pg.textSize(discountSize);
+            ctx.font = `${discountSize}px begum`;
+            pg.textAlign(discountAlignMap[alignment], BOTTOM);
+            pg.fill(selectedColorscheme.foregroundColor);
+            pg.text(toSentenceCase(discountText), discountX, outlineTopY - discountGap);
+
+            ctx.letterSpacing = '0.3em';
+            pg.textSize(ctaSize);
+            ctx.font = `${ctaSize}px begum`;
+            pg.textAlign(CENTER, CENTER);
+        }
+    }
+
+    ctx.letterSpacing = '0px';
     pg.pop();
 }
 

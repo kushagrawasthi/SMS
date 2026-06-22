@@ -410,7 +410,7 @@
                                     </div>
                                     <div id="text-overlay-heading-options" class="content-sub-options">
                                         <label class="marginalia-label">Text
-                                            <textarea id="text-overlay-heading-text" placeholder="heading" rows="3"></textarea>
+                                            <textarea id="text-overlay-heading-text" placeholder="heading" rows="3">Heading</textarea>
                                         </label>
                                         <label class="marginalia-label">
                                             <span class="marginalia-label-row">Size <span id="text-overlay-heading-size-label">140pt</span></span>
@@ -433,7 +433,7 @@
                                     </div>
                                     <div id="text-overlay-subheading-options" class="content-sub-options">
                                         <label class="marginalia-label">Text
-                                            <input type="text" id="text-overlay-subheading-text" placeholder="sub-heading">
+                                            <input type="text" id="text-overlay-subheading-text" placeholder="sub-heading" value="Subheading">
                                         </label>
                                         <label class="marginalia-label">
                                             <span class="marginalia-label-row">Gap <span id="text-overlay-subheading-gap-label">33px</span></span>
@@ -481,8 +481,22 @@
                                         </label>
                                     </div>
                                     <div id="text-overlay-body-options" class="content-sub-options">
+                                        <div class="content-field">
+                                            <span class="content-field-label">Position</span>
+                                            <div class="content-alignment-options">
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-body-position" value="below" checked>
+                                                    <span>Below</span>
+                                                </label>
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-body-position" value="above-header">
+                                                    <span>Above</span>
+                                                </label>
+                                            </div>
+                                        </div>
                                         <label class="marginalia-label">Text
-                                            <textarea id="text-overlay-body-text" placeholder="body text" rows="4"></textarea>
+                                            <textarea id="text-overlay-body-text" placeholder="body text" rows="4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</textarea>
                                         </label>
                                     </div>
                                 </div>
@@ -497,9 +511,31 @@
                                         </label>
                                     </div>
                                     <div id="text-overlay-cta-options" class="content-sub-options">
+                                        <div class="content-field">
+                                            <span class="content-field-label">Style</span>
+                                            <div class="content-alignment-options">
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-cta-style" value="solid" checked>
+                                                    <span>Solid</span>
+                                                </label>
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-cta-style" value="line">
+                                                    <span>Line</span>
+                                                </label>
+                                                <label class="content-align-option">
+                                                    <input type="radio" name="text-overlay-cta-style" value="coupon">
+                                                    <span>Coupon</span>
+                                                </label>
+                                            </div>
+                                        </div>
                                         <label class="marginalia-label">Label
-                                            <input type="text" id="text-overlay-cta-text" placeholder="e.g. Learn more">
+                                            <input type="text" id="text-overlay-cta-text" placeholder="e.g. Learn more" value="Shop now">
                                         </label>
+                                        <div id="text-overlay-cta-discount-field" class="content-field" style="display:none">
+                                            <label class="marginalia-label">Discount Code
+                                                <input type="text" id="text-overlay-cta-discount-text" value="Discount Code:">
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 

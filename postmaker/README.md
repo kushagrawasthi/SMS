@@ -46,8 +46,25 @@ Decorative elements placed at the four frame corners, independent of the frame s
 #### Marginalia
 Toggle-activated text placed in the 50px canvas margins. Two modes:
 
-- **Manual** — four independent text inputs (top, bottom, left, right). Left and right text is rotated 90° to read inward. All text is rendered uppercase in Begum 20px with 0.3em letter spacing.
+- **Manual** — four independent text inputs (top, bottom, left, right). Left and right text is rotated 90° to read inward. All text is rendered uppercase in Begum 20px with 0.3em letter spacing. Only available when the text overlay's master alignment is set to Center.
 - **Text on Path** — a single text input that repeats continuously around a rectangle inset 42px from the canvas edge (8px outside the frame margin line). Characters are individually placed and rotated to follow the path clockwise.
+
+### Text Overlay
+A stack of optional text elements, all keyed off a single master horizontal alignment (left / center / right). The heading toggle gates everything below it — sub-heading, logo, body, and CTA all disable themselves when the heading is turned off.
+
+| Element | Default text | Notes |
+|---|---|---|
+| Heading | "Heading" | Up to 3 lines, uppercase, adjustable size (120–160pt). The only element guaranteed to always render text — if the field is cleared it falls back to the default rather than drawing nothing. |
+| Sub-heading | "Subheading" | Single line, rendered as typed (no case transform), adjustable gap from the heading. |
+| Logo | — | Positioned top or bottom; unavailable with Badges or the Reel/Story format. |
+| Body | 2 lines of lorem ipsum | Sentence case, Begum 30px, word-wraps to a max width of 50% of the content area. Position is either "Below" (centered in the second-last grid row, shifting heading/sub-heading up one grid row to make room) or "Above Header" (centered in the second grid row, fixed — unaffected by the heading shift). |
+| CTA | "Shop now" | All caps with 0.3em letter spacing, Begum 25px. Three styles — Solid, Line, Coupon — all sized 75px tall, width clamped between 30%–35% of the content area, centered in the second-last grid row. |
+| Discount Code (coupon style only) | "Discount Code:" | Sentence case, Begum 20px, drawn above the coupon's dashed outline. Alignment (left/center/right) follows the master alignment rather than always centering on the button. |
+
+CTA styles:
+- **Solid** — solid fill in the button colour, label in the background colour.
+- **Line** — 1px outline in the button colour, label in the button colour.
+- **Coupon** — solid fill rect (5px corner radius) in the button colour, with a dashed outline offset 5px outward on every side, label in the background colour.
 
 ### Colour Palettes
 Seven palettes built from three base colours — **Syaahi** (dark `#272011`), **Halda** (light `#d3cdc4`), and **Suvarna** (gold `#9f8d6a`):
@@ -113,3 +130,4 @@ Dependencies are loaded from CDN:
 - Image brightness is sampled by drawing `bgImg.canvas` into a throwaway 50×50 native canvas — this avoids modifying p5's internal image state via `loadPixels()`
 - Text-on-path is implemented by walking characters one by one around the rectangle, computing position and tangent angle at each step via `posOnRect()` — p5 has no native path-text API
 - `CanvasRenderingContext2D.letterSpacing` (Chrome 99+, Firefox 117+) is used for manual marginalia; path-mode text handles spacing manually to avoid double-counting during per-character layout
+- Body text word-wrap measures with native `ctx.measureText()` (not p5's `textWidth()`) to avoid stale text metrics, and falls back to a character-level break for any single word wider than the max width
