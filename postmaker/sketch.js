@@ -59,6 +59,10 @@ let textOverlayCtaStyleRadios   = document.querySelectorAll('input[name="text-ov
 let textOverlayCtaDiscountField = document.querySelector('#text-overlay-cta-discount-field');
 let textOverlayCtaDiscountText  = document.querySelector('#text-overlay-cta-discount-text');
 let textOverlayAlignRadios      = document.querySelectorAll('input[name="text-overlay-align"]');
+let collageSeedInput = document.querySelector('#collage-seed');
+let collageSizeRadios = document.querySelectorAll('input[name="collage-size"]');
+let collageLabelsToggle = document.querySelector('#collage-labels-toggle');
+let collageLabelInputs = document.querySelectorAll('.collage-label-input');
 let marginaliaSection = document.querySelector('#marginalia-controls');
 let modeOptions = document.querySelectorAll('.mode-option');
 let marginaliaManualInputs = document.querySelector('#marginalia-manual-inputs');
@@ -93,6 +97,10 @@ let aspect = exportSize.width / exportSize.height;
 
 // #region Typography Variables
 let marginaliaMode = 'manual';
+// #endregion
+
+// #region Collage Variables
+let collageImages = [null, null, null, null, null];
 // #endregion
 
 // #region Background and Frame Variables
@@ -329,6 +337,8 @@ function setup() {
     setBackground();
     updateCornicesOptions();
     updateBadgesAvailability();
+    updateThickFrameAvailability();
+    updateBackgroundImageAvailability();
 
     document.querySelectorAll('.control-section:not(#save-controls) h3').forEach(h3 => {
         h3.addEventListener('click', () => {
@@ -354,6 +364,8 @@ function setup() {
             });
             const target = document.querySelector(`#content-${this.value.replace(/-/g, '-')}-options`);
             if (target) target.classList.add('expanded');
+            updateThickFrameAvailability();
+            updateBackgroundImageAvailability();
         });
     });
 
@@ -405,6 +417,53 @@ function setup() {
         radio.addEventListener('input', updateCtaDiscountVisibility);
     });
     updateCtaDiscountVisibility();
+
+    // #region COLLAGE
+    document.querySelectorAll('.collage-image-input').forEach((input, index) => {
+        const slot = input.closest('.collage-upload-slot');
+        const thumb = slot.querySelector('.collage-thumbnail');
+        const removeBtn = slot.querySelector('.collage-remove-btn');
+
+        input.addEventListener('change', function () {
+            const file = this.files && this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                thumb.src = e.target.result;
+                thumb.style.display = 'block';
+                removeBtn.style.display = 'flex';
+                loadImage(e.target.result, img => { collageImages[index] = img; });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeBtn.addEventListener('click', function () {
+            input.value = '';
+            thumb.style.display = 'none';
+            thumb.src = '';
+            removeBtn.style.display = 'none';
+            collageImages[index] = null;
+        });
+    });
+
+    const collageExtraSlots = [...document.querySelectorAll('.collage-slot-extra')];
+    const collageAddImageBtn = document.getElementById('collage-add-image-btn');
+    let collageExtraRevealed = 0;
+    collageAddImageBtn.addEventListener('click', function () {
+        if (collageExtraRevealed >= collageExtraSlots.length) return;
+        collageExtraSlots[collageExtraRevealed].style.display = 'flex';
+        collageExtraRevealed++;
+        if (collageExtraRevealed >= collageExtraSlots.length) {
+            collageAddImageBtn.style.display = 'none';
+        }
+    });
+
+    const collageLabelsToggle  = document.getElementById('collage-labels-toggle');
+    const collageLabelsOptions = document.getElementById('collage-labels-options');
+    collageLabelsToggle.addEventListener('input', () => {
+        collageLabelsOptions.classList.toggle('expanded', collageLabelsToggle.checked);
+    });
+    // #endregion
 
     const headingSizeLabel = document.getElementById('text-overlay-heading-size-label');
     textOverlayHeadingSize.addEventListener('input', function () {
@@ -550,6 +609,29 @@ function getMarginaliaColor() {
         : selectedColorscheme.foregroundColor;
 }
 
+function updateThickFrameAvailability() {
+    const thickOption = frameType.querySelector('option[value="1"]');
+    if (!thickOption) return;
+    const activeLayout = [...contentLayoutRadios].find(r => r.checked)?.value;
+    const disabled = activeLayout === 'collage';
+    thickOption.disabled = disabled;
+    if (disabled && frameType.value === "1") {
+        frameType.value = "0";
+        frameType.dispatchEvent(new Event('change'));
+    }
+}
+
+function updateBackgroundImageAvailability() {
+    const activeLayout = [...contentLayoutRadios].find(r => r.checked)?.value;
+    const disabled = activeLayout === 'collage';
+    bgImgSection.style.opacity = disabled ? '0.4' : '1';
+    bgImgSection.style.pointerEvents = disabled ? 'none' : 'auto';
+    if (disabled && bgImageToggle.checked) {
+        bgImageToggle.checked = false;
+        bgImageToggle.dispatchEvent(new Event('input'));
+    }
+}
+
 function updateLogoSection() {
     const logoSection = document.getElementById('text-overlay-logo-section');
     const logoCallout = document.getElementById('text-overlay-logo-callout');
@@ -631,7 +713,389 @@ function getContentArea() {
 function drawContent() {
     const activeLayout = [...contentLayoutRadios].find(r => r.checked)?.value;
     if (activeLayout === 'text-overlay') drawTextOverlay();
+    else if (activeLayout === 'collage') drawCollage(getContentArea());
 }
+
+// Seeded Fisher-Yates shuffle — relies on p5's random(), which randomSeed() controls.
+function shuffleSeeded(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(random(i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+// Collage images may cross the 50px frame line, but never get closer than 25px
+// to the raw canvas edge, and never sit ambiguously close to the line without
+// committing to cross it — anything nearer than 25px to either side of the line
+// snaps to exactly 25px past it.
+const FRAME_INSET     = 50;
+const FRAME_EXCURSION = 25;
+const COLLAGE_SIZE_MULTIPLIERS = { small: 1, medium: 1.2, large: 1.4 };
+
+const COLLAGE_MAX_ANGLE = 20; // degrees, matches the random(-20, 20) range below
+
+const COLLAGE_LABEL_SIZE = 25;
+const COLLAGE_LABEL_GAP  = 14; // px between the image's bounding box and the label
+// Approximate footprint used for label/label and label/image collision checks —
+// the image's own edge length ("corner to corner") by the text size plus a little padding.
+const COLLAGE_LABEL_BOX_HEIGHT = COLLAGE_LABEL_SIZE + 10;
+
+function aabbOverlap(ax, ay, ahw, ahh, bx, by, bhw, bhh) {
+    return Math.abs(ax - bx) < (ahw + bhw) && Math.abs(ay - by) < (ahh + bhh);
+}
+
+// Named rotation buckets, each a fraction of COLLAGE_MAX_ANGLE so they scale
+// together if the max angle ever changes.
+const COLLAGE_ROTATION_BUCKETS = {
+    positive:         () => random(COLLAGE_MAX_ANGLE * 0.5, COLLAGE_MAX_ANGLE),
+    negative:         () => random(-COLLAGE_MAX_ANGLE, -COLLAGE_MAX_ANGLE * 0.5),
+    positiveNeutral:  () => random(COLLAGE_MAX_ANGLE * 0.1, COLLAGE_MAX_ANGLE * 0.5),
+    negativeNeutral:  () => random(-COLLAGE_MAX_ANGLE * 0.5, -COLLAGE_MAX_ANGLE * 0.1),
+    neutral:          () => random(-COLLAGE_MAX_ANGLE * 0.3, COLLAGE_MAX_ANGLE * 0.3),
+    random:           () => random(-COLLAGE_MAX_ANGLE, COLLAGE_MAX_ANGLE),
+};
+
+// Per-count rotation plans — each entry is a bucket name, one per image, chosen
+// so positive/negative tilt stays balanced across the layout instead of
+// drifting all one way by chance.
+const COLLAGE_ROTATION_PLANS = {
+    1: () => [random() < 0.5 ? 'positive' : 'negative'],
+    2: () => ['positive', 'negative'],
+    3: () => ['positive', 'negative', 'neutral'],
+    4: () => ['positive', 'negative', 'negativeNeutral', 'positiveNeutral'],
+    5: () => ['positive', 'negative', 'negativeNeutral', 'positiveNeutral', 'random'],
+};
+
+function buildCollageRotationPlan(count) {
+    const plan = COLLAGE_ROTATION_PLANS[count] ? COLLAGE_ROTATION_PLANS[count]() : null;
+    if (plan) return plan;
+    // Fallback for any count outside 1-5: cycle through the full plan's buckets.
+    const base = COLLAGE_ROTATION_PLANS[5]();
+    return Array.from({ length: count }, (_, i) => base[i % base.length]);
+}
+function clampNearFrame(pos, halfExtent, canvasExtent) {
+    const snapZone = FRAME_INSET + FRAME_EXCURSION;
+    const snapPos  = FRAME_INSET - FRAME_EXCURSION;
+
+    if (pos - halfExtent < snapZone) pos = snapPos + halfExtent;
+    if (canvasExtent - (pos + halfExtent) < snapZone) pos = canvasExtent - snapPos - halfExtent;
+
+    return pos;
+}
+
+// Procedural placement, run once per distinct (seed, size, set-of-filled-slots)
+// combination. Returns one layout entry per filled slot; positions are then
+// cached so drag overrides can mutate them without being overwritten by the
+// random sequence on the next frame.
+function generateCollageLayout(area, filledSlots, sizeMultiplier) {
+    // Partition the content area into a grid with at least one cell per image,
+    // sized to roughly match the area's aspect ratio, then hand out cells via a
+    // seeded shuffle so each image lands in a different region — balanced overall,
+    // but not in a predictable left-to-right/top-to-bottom order.
+    const count = filledSlots.length;
+    const cols  = Math.max(1, Math.round(Math.sqrt(count * (area.w / area.h))));
+    const rows  = Math.max(1, Math.ceil(count / cols));
+
+    const cells = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) cells.push({ c, r });
+    }
+    shuffleSeeded(cells);
+
+    const cellW = area.w / cols;
+    const cellH = area.h / rows;
+
+    // One rotation bucket per image, balanced positive/negative by count, then
+    // shuffled so the assignment isn't tied to upload order.
+    const rotationPlan = buildCollageRotationPlan(count);
+    shuffleSeeded(rotationPlan);
+
+    const items = filledSlots.map((slotIndex, i) => {
+        const img   = collageImages[slotIndex];
+        const cell  = cells[i];
+        const cellX = area.x + cell.c * cellW;
+        const cellY = area.y + cell.r * cellH;
+
+        // Jitter within an inset region of the cell — keeps images loosely
+        // grid-anchored (balanced) while still landing at organic offsets.
+        const insetX = cellW * 0.2;
+        const insetY = cellH * 0.2;
+        let x = cellX + insetX + random(cellW - insetX * 2);
+        let y = cellY + insetY + random(cellH - insetY * 2);
+
+        const longSide = random(400, 500) * sizeMultiplier;
+        const imgAspect = img.width / img.height;
+        const w = imgAspect >= 1 ? longSide : longSide * imgAspect;
+        const h = imgAspect >= 1 ? longSide / imgAspect : longSide;
+
+        const angle = COLLAGE_ROTATION_BUCKETS[rotationPlan[i]](); // degrees
+
+        // Axis-aligned bounding box of the rotated image, used to keep it clear
+        // of the canvas edge regardless of how much the rotation widens its extent.
+        const rad   = radians(angle);
+        const halfW = Math.abs(w / 2 * Math.cos(rad)) + Math.abs(h / 2 * Math.sin(rad));
+        const halfH = Math.abs(w / 2 * Math.sin(rad)) + Math.abs(h / 2 * Math.cos(rad));
+        x = clampNearFrame(x, halfW, pg.width);
+        y = clampNearFrame(y, halfH, pg.height);
+
+        return { slotIndex, x, y, w, h, angle, halfW, halfH };
+    });
+
+    // Label placement — a caption can sit on any of the 4 sides of the image's
+    // bounding box, not just above/below, which gives collision avoidance far
+    // more room to find a clean spot once several images are involved.
+    const placedLabelBoxes = [];
+    items.forEach(item => {
+        const side = pickCollageLabelSide(item, area, items, placedLabelBoxes);
+        item.labelSide = side; // a preference only — collageLabelPlacement() re-validates it live every frame
+        item.labelAngleJitter = random(-5, 5); // independent wobble relative to the image's own rotation
+
+        const geom = collageLabelPlacement(item, area, side, items, placedLabelBoxes);
+        placedLabelBoxes.push({ x: geom.x, y: geom.y, halfW: geom.halfW, halfH: geom.halfH });
+    });
+
+    return items;
+}
+
+// The 4 candidate sides a label can sit on, in image-bounding-box-relative
+// world space (not rotated into the image's local space — the box position
+// stays axis-aligned even though the image and its caption are tilted).
+// The caption itself always stays in standard horizontal orientation (plus
+// the image-angle + jitter applied at render time) regardless of which side
+// it sits on — only the anchor position and text alignment change per side.
+// `align`/`anchorX` let a left/right label hug the edge nearest the image
+// (growing away from it as the text gets longer) instead of floating at the
+// midpoint of its footprint with an inconsistent gap. `anchorX` sits right
+// at the gap edge (just outside the image); `x` is the footprint's own
+// center, offset further out by half its width so the box doesn't double
+// back over the image.
+function collageLabelGeometry(item, side) {
+    switch (side) {
+        case 'top':
+            return { x: item.x, y: item.y - item.halfH - COLLAGE_LABEL_GAP,
+                      halfW: item.w / 2, halfH: COLLAGE_LABEL_BOX_HEIGHT / 2,
+                      align: CENTER, anchorX: item.x };
+        case 'bottom':
+            return { x: item.x, y: item.y + item.halfH + COLLAGE_LABEL_GAP,
+                      halfW: item.w / 2, halfH: COLLAGE_LABEL_BOX_HEIGHT / 2,
+                      align: CENTER, anchorX: item.x };
+        case 'left': {
+            const edgeX = item.x - item.halfW - COLLAGE_LABEL_GAP;
+            const halfW = item.w / 2;
+            return { x: edgeX - halfW, y: item.y, halfW, halfH: COLLAGE_LABEL_BOX_HEIGHT / 2,
+                      align: RIGHT, anchorX: edgeX };
+        }
+        case 'right': {
+            const edgeX = item.x + item.halfW + COLLAGE_LABEL_GAP;
+            const halfW = item.w / 2;
+            return { x: edgeX + halfW, y: item.y, halfW, halfH: COLLAGE_LABEL_BOX_HEIGHT / 2,
+                      align: LEFT, anchorX: edgeX };
+        }
+    }
+}
+
+const COLLAGE_LABEL_SIDES = ['top', 'bottom', 'left', 'right'];
+
+function collageLabelInArea(geom, area) {
+    return geom.x - geom.halfW >= area.x && geom.x + geom.halfW <= area.x + area.w &&
+           geom.y - geom.halfH >= area.y && geom.y + geom.halfH <= area.y + area.h;
+}
+
+function collageLabelCollides(geom, item, items, placedBoxes) {
+    return items.some(other => other !== item &&
+            aabbOverlap(geom.x, geom.y, geom.halfW, geom.halfH, other.x, other.y, other.halfW, other.halfH)) ||
+        placedBoxes.some(box =>
+            aabbOverlap(geom.x, geom.y, geom.halfW, geom.halfH, box.x, box.y, box.halfW, box.halfH));
+}
+
+// Scores all 4 sides — collision-free and inside the drawing area is best (0),
+// inside the area but overlapping something is next-best (1), off the area
+// entirely is worst (2) — then picks randomly among whichever sides tie for
+// best, so collisions are resolved by trying every side before falling back
+// to accepting an overlap.
+function pickCollageLabelSide(item, area, items, placedBoxes) {
+    const scored = COLLAGE_LABEL_SIDES.map(side => {
+        const geom = collageLabelGeometry(item, side);
+        const inArea = collageLabelInArea(geom, area);
+        const collisionFree = inArea && !collageLabelCollides(geom, item, items, placedBoxes);
+        const score = collisionFree ? 0 : inArea ? 1 : 2;
+        return { side, score };
+    });
+
+    const bestScore = Math.min(...scored.map(s => s.score));
+    const best = scored.filter(s => s.score === bestScore);
+    shuffleSeeded(best);
+    return best[0].side;
+}
+
+// Recomputes a label's geometry from the image's *current* position (live, not
+// cached) so it tracks the image when dragged. Tries the preferred side first,
+// then every other side, preferring whichever is both in-area and collision-free
+// against the current image positions and already-placed labels; if none are
+// fully clean, falls back to the first in-area side even if it collides; if none
+// are in-area at all, clamps the preferred side as a last resort — so the
+// label's footprint always stays wholly inside the drawing area, never closer
+// than 50px to the frame, regardless of where the image has been dragged to.
+function collageLabelPlacement(item, area, preferSide, items, placedBoxes) {
+    const order = [preferSide, ...COLLAGE_LABEL_SIDES.filter(s => s !== preferSide)];
+
+    for (const side of order) {
+        const geom = collageLabelGeometry(item, side);
+        if (collageLabelInArea(geom, area) && !collageLabelCollides(geom, item, items, placedBoxes)) return geom;
+    }
+    for (const side of order) {
+        const geom = collageLabelGeometry(item, side);
+        if (collageLabelInArea(geom, area)) return geom;
+    }
+
+    const geom = collageLabelGeometry(item, preferSide);
+    const anchorOffsetX = geom.anchorX - geom.x; // preserve the edge-hugging offset through the clamp
+    geom.x = constrain(geom.x, area.x + geom.halfW, area.x + area.w - geom.halfW);
+    geom.y = constrain(geom.y, area.y + geom.halfH, area.y + area.h - geom.halfH);
+    geom.anchorX = geom.x + anchorOffsetX;
+    return geom;
+}
+
+let collageLayoutCache = { signature: null, layout: [] };
+
+function drawCollage(area) {
+    const filledSlots = collageImages.map((img, i) => img ? i : null).filter(i => i !== null);
+    if (filledSlots.length === 0) {
+        collageLayoutCache = { signature: null, layout: [] };
+        return;
+    }
+
+    const seed    = int(collageSeedInput.value) || 0;
+    const sizeKey = [...collageSizeRadios].find(r => r.checked)?.value ?? 'medium';
+    const signature = `${filledSlots.join(',')}|${seed}|${sizeKey}`;
+
+    if (collageLayoutCache.signature !== signature) {
+        randomSeed(seed);
+        const layout = generateCollageLayout(area, filledSlots, COLLAGE_SIZE_MULTIPLIERS[sizeKey]);
+        collageLayoutCache = { signature, layout };
+    }
+
+    pg.push();
+    pg.imageMode(CENTER);
+
+    // Drop shadow — drawingContext property, not managed by push()/pop(), so it
+    // must be reset manually once the batch of images is drawn.
+    const ctx = pg.drawingContext;
+    ctx.shadowColor   = 'rgba(0, 0, 0, 0.35)';
+    ctx.shadowBlur    = 20;
+    ctx.shadowOffsetX = 6;
+    ctx.shadowOffsetY = 8;
+
+    collageLayoutCache.layout.forEach(item => {
+        const img = collageImages[item.slotIndex];
+        if (!img) return;
+        pg.push();
+        pg.translate(item.x, item.y);
+        pg.rotate(radians(item.angle)); // pg uses radians regardless of the main sketch's angleMode
+        pg.image(img, 0, 0, item.w, item.h);
+        pg.pop();
+    });
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+    pg.pop();
+
+    if (!collageLabelsToggle.checked) return;
+
+    pg.push();
+    pg.noStroke();
+    pg.fill(selectedColorscheme.foregroundColor);
+    pg.textFont('begum');
+    pg.textSize(COLLAGE_LABEL_SIZE);
+
+    // Recomputed fresh every frame from the images' current (possibly dragged)
+    // positions, so a label that now collides with an image or another label
+    // falls back to a different side live rather than staying stuck where it
+    // was originally generated.
+    const placedLabelBoxes = [];
+    collageLayoutCache.layout.forEach(item => {
+        const labelInput = collageLabelInputs[item.slotIndex];
+        const text = labelInput && labelInput.value.trim();
+        if (!text) return;
+
+        const geom = collageLabelPlacement(item, area, item.labelSide, collageLayoutCache.layout, placedLabelBoxes);
+        placedLabelBoxes.push({ x: geom.x, y: geom.y, halfW: geom.halfW, halfH: geom.halfH });
+
+        pg.push();
+        pg.translate(geom.anchorX, geom.y);
+        pg.rotate(radians(item.angle + item.labelAngleJitter)); // pg uses radians regardless of the main sketch's angleMode
+        pg.textAlign(geom.align, CENTER);
+        pg.text(toSentenceCase(text), 0, 0);
+        pg.pop();
+    });
+
+    pg.pop();
+}
+
+// #region COLLAGE DRAG
+// Converts preview-canvas mouse coordinates to full-resolution pg coordinates;
+// returns null if the mouse is outside the canvas.
+function previewToPg(mx, my) {
+    const preview = setPreviewDimensions();
+    if (mx < 0 || my < 0 || mx > preview.previewWidth || my > preview.previewHeight) return null;
+    return {
+        x: mx / preview.previewWidth  * pg.width,
+        y: my / preview.previewHeight * pg.height,
+    };
+}
+
+function isCollageActive() {
+    return [...contentLayoutRadios].find(r => r.checked)?.value === 'collage';
+}
+
+function hitTestCollageItem(px, py, item) {
+    const dx = px - item.x;
+    const dy = py - item.y;
+    const rad = radians(-item.angle);
+    const localX = dx * Math.cos(rad) - dy * Math.sin(rad);
+    const localY = dx * Math.sin(rad) + dy * Math.cos(rad);
+    return Math.abs(localX) <= item.w / 2 && Math.abs(localY) <= item.h / 2;
+}
+
+let collageDragState = null;
+
+function mousePressed() {
+    if (!isCollageActive()) return;
+    const pgPoint = previewToPg(mouseX, mouseY);
+    if (!pgPoint) return;
+
+    for (let i = collageLayoutCache.layout.length - 1; i >= 0; i--) {
+        const item = collageLayoutCache.layout[i];
+        if (hitTestCollageItem(pgPoint.x, pgPoint.y, item)) {
+            collageDragState = {
+                slotIndex: item.slotIndex,
+                startMouseX: pgPoint.x,
+                startMouseY: pgPoint.y,
+                startItemX: item.x,
+                startItemY: item.y,
+            };
+            return;
+        }
+    }
+}
+
+function mouseDragged() {
+    if (!collageDragState) return;
+    const item = collageLayoutCache.layout.find(it => it.slotIndex === collageDragState.slotIndex);
+    if (!item) { collageDragState = null; return; }
+
+    const pgPoint = previewToPg(mouseX, mouseY);
+    if (!pgPoint) return;
+
+    const dx = pgPoint.x - collageDragState.startMouseX;
+    const dy = pgPoint.y - collageDragState.startMouseY;
+    item.x = clampNearFrame(collageDragState.startItemX + dx, item.halfW, pg.width);
+    item.y = clampNearFrame(collageDragState.startItemY + dy, item.halfH, pg.height);
+}
+
+function mouseReleased() {
+    collageDragState = null;
+}
+// #endregion
 
 
 function drawTextOverlay() {

@@ -577,6 +577,50 @@ input[type="checkbox"].checkbox-raw {
 /*#endregion*/
 
 /*#region CONTENT*/
+.content-tabs {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 4px;
+    padding-top: 14px;
+    margin-bottom: 14px;
+}
+
+.content-tab {
+    display: flex;
+    flex: 1;
+    cursor: pointer;
+}
+
+.content-tab input[type="radio"] {
+    display: none;
+}
+
+.content-tab span {
+    display: block;
+    flex: 1;
+    transition: var(--transition);
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background: transparent;
+    padding: 8px 4px;
+    color: var(--primary-color);
+    font-family: "begum", sans-serif;
+    font-size: 9px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.content-tab span:hover {
+    background: rgba(196, 192, 147, 0.15);
+}
+
+.content-tab input[type="radio"]:checked + span {
+    background: var(--primary-color);
+    color: var(--dark-green);
+}
+
 .content-layout-options .sub-section {
     border-top: none;
     padding: 0;
@@ -677,6 +721,67 @@ input[type="checkbox"].checkbox-raw {
     resize: none;
     line-height: 1.5;
 }
+
+#collage-upload-list {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.collage-upload-slot {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.collage-upload-slot .marginalia-label {
+    flex: 1;
+    padding: 0;
+}
+
+.collage-thumb-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.collage-thumbnail {
+    display: block;
+    border: var(--white-border);
+    border-radius: 4px;
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+}
+
+.collage-remove-btn {
+    all: unset;
+    display: flex;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: var(--white-border);
+    border-radius: 50%;
+    background: var(--dark-green);
+    width: 16px;
+    height: 16px;
+    color: var(--primary-color);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.collage-remove-btn:hover {
+    background: var(--primary-color);
+    color: var(--dark-green);
+}
+
+#collage-add-image-btn {
+    margin-top: 14px;
+}
 /*#endregion*/
 
 /*#region SAVE*/
@@ -720,7 +825,14 @@ input[type="checkbox"].checkbox-raw {
     }
 
     #control-panel {
+        top: 0;
         width: 90%;
         max-width: 100%;
+        height: auto;
+        overflow: visible;
+    }
+
+    #controls-wrapper {
+        overflow-y: visible;
     }
 }

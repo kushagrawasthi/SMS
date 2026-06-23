@@ -370,15 +370,18 @@
                     <h3>Content</h3>
                     <div class="section-body">
 
-                        <div class="sub-section">
-                            <div class="sub-section-header">
-                                <h4>Text Overlay</h4>
-                                <label class="toggle">
-                                    <input type="radio" name="content-layout" id="content-layout-text-overlay" value="text-overlay">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div id="content-text-overlay-options" class="content-layout-options">
+                        <div class="content-tabs">
+                            <label class="content-tab">
+                                <input type="radio" name="content-layout" id="content-layout-text-overlay" value="text-overlay" checked>
+                                <span>Text Overlay</span>
+                            </label>
+                            <label class="content-tab">
+                                <input type="radio" name="content-layout" id="content-layout-collage" value="collage">
+                                <span>Collage</span>
+                            </label>
+                        </div>
+
+                        <div id="content-text-overlay-options" class="content-layout-options expanded">
 
                                 <!-- 0. Alignment -->
                                 <div class="content-field">
@@ -496,7 +499,7 @@
                                         </div>
                                         <label class="marginalia-label">Text
                                             <textarea id="text-overlay-body-text" placeholder="body text" rows="4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</textarea>
+</textarea>
                                         </label>
                                     </div>
                                 </div>
@@ -541,7 +544,109 @@ Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</textarea>
 
                                 </div><!-- end #text-overlay-dependents -->
 
+                        </div>
+
+                        <div id="content-collage-options" class="content-layout-options">
+
+                            <div id="collage-upload-list">
+                                <div class="collage-upload-slot">
+                                    <label class="marginalia-label">Image 1
+                                        <input type="file" accept="image/*" class="collage-image-input">
+                                    </label>
+                                    <div class="collage-thumb-wrap">
+                                        <img class="collage-thumbnail" style="display:none">
+                                        <button type="button" class="collage-remove-btn" style="display:none" aria-label="Remove image">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="collage-upload-slot">
+                                    <label class="marginalia-label">Image 2
+                                        <input type="file" accept="image/*" class="collage-image-input">
+                                    </label>
+                                    <div class="collage-thumb-wrap">
+                                        <img class="collage-thumbnail" style="display:none">
+                                        <button type="button" class="collage-remove-btn" style="display:none" aria-label="Remove image">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="collage-upload-slot">
+                                    <label class="marginalia-label">Image 3
+                                        <input type="file" accept="image/*" class="collage-image-input">
+                                    </label>
+                                    <div class="collage-thumb-wrap">
+                                        <img class="collage-thumbnail" style="display:none">
+                                        <button type="button" class="collage-remove-btn" style="display:none" aria-label="Remove image">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="collage-upload-slot collage-slot-extra" style="display:none">
+                                    <label class="marginalia-label">Image 4
+                                        <input type="file" accept="image/*" class="collage-image-input">
+                                    </label>
+                                    <div class="collage-thumb-wrap">
+                                        <img class="collage-thumbnail" style="display:none">
+                                        <button type="button" class="collage-remove-btn" style="display:none" aria-label="Remove image">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="collage-upload-slot collage-slot-extra" style="display:none">
+                                    <label class="marginalia-label">Image 5
+                                        <input type="file" accept="image/*" class="collage-image-input">
+                                    </label>
+                                    <div class="collage-thumb-wrap">
+                                        <img class="collage-thumbnail" style="display:none">
+                                        <button type="button" class="collage-remove-btn" style="display:none" aria-label="Remove image">&times;</button>
+                                    </div>
+                                </div>
                             </div>
+
+                            <button type="button" id="collage-add-image-btn">+ Add Image</button>
+
+                            <div class="content-field">
+                                <span class="content-field-label">Size</span>
+                                <div class="content-alignment-options">
+                                    <label class="content-align-option">
+                                        <input type="radio" name="collage-size" value="small">
+                                        <span>Small</span>
+                                    </label>
+                                    <label class="content-align-option">
+                                        <input type="radio" name="collage-size" value="medium" checked>
+                                        <span>Medium</span>
+                                    </label>
+                                    <label class="content-align-option">
+                                        <input type="radio" name="collage-size" value="large">
+                                        <span>Large</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <label class="marginalia-label">Seed
+                                <input type="number" id="collage-seed" value="1" min="0" step="1">
+                            </label>
+
+                            <div class="sub-section">
+                                <div class="sub-section-header">
+                                    <h4>Labels</h4>
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" id="collage-labels-toggle" class="checkbox-raw">
+                                        <span class="checkbox-custom"></span>
+                                    </label>
+                                </div>
+                                <div id="collage-labels-options" class="content-sub-options">
+                                    <label class="marginalia-label">Label 1
+                                        <input type="text" class="collage-label-input" placeholder="Optional caption">
+                                    </label>
+                                    <label class="marginalia-label">Label 2
+                                        <input type="text" class="collage-label-input" placeholder="Optional caption">
+                                    </label>
+                                    <label class="marginalia-label">Label 3
+                                        <input type="text" class="collage-label-input" placeholder="Optional caption">
+                                    </label>
+                                    <label class="marginalia-label">Label 4
+                                        <input type="text" class="collage-label-input" placeholder="Optional caption">
+                                    </label>
+                                    <label class="marginalia-label">Label 5
+                                        <input type="text" class="collage-label-input" placeholder="Optional caption">
+                                    </label>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>
